@@ -43,6 +43,16 @@ php artisan leadflow:assign-role utente@esempio.it admin
 
 La pagina va aperta via `http://`: da `file://` il modulo funziona, ma l'origine dell'ordine risulta non disponibile.
 
+## Aggiornamenti in tempo reale
+
+Tabella e dettaglio ordine si aggiornano da soli tramite WebSocket con Laravel Reverb. Il messaggio contiene solo l'ID dell'ordine sul canale privato `orders`: i dati si ricaricano con le normali richieste autorizzate. In locale avvia il server con:
+
+```bash
+php artisan reverb:start
+```
+
+Serve `BROADCAST_CONNECTION=reverb` con le variabili `REVERB_*` nel `.env`. Se Reverb è fermo gli ordini si salvano comunque e il pannello si aggiorna con un polling ogni 60 secondi.
+
 ## Architettura
 
 | Percorso | Contenuto |

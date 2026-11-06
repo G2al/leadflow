@@ -27,7 +27,8 @@ class OrdersTable
                 ->with('offer')
                 ->when($isAdmin(), fn (Builder $query): Builder => $query->with('assignee')))
             ->defaultSort('created_at', 'desc')
-            ->poll('15s')
+            // Live updates arrive over the websocket: this is only the safety net.
+            ->poll('60s')
             ->stackedOnMobile()
             ->columns([
                 TextColumn::make('id')

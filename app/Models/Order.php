@@ -3,11 +3,14 @@
 namespace App\Models;
 
 use App\Enums\OrderStatus;
+use App\Observers\OrderObserver;
 use Brick\Math\BigDecimal;
+use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+#[ObservedBy(OrderObserver::class)]
 class Order extends Model
 {
     /** Together with Product::MAX_PRICE keeps total_price within decimal(10,2). */
