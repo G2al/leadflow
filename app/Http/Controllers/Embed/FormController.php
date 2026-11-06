@@ -22,6 +22,7 @@ class FormController extends Controller
             'submitUrl' => route('embed.orders.store', $offer),
             'sourceUrl' => $normalizer->normalize($request->query('source')),
             'privacyUrl' => config('leadflow.privacy_url'),
+            'isPreview' => $request->boolean('preview'),
         ]);
     }
 }

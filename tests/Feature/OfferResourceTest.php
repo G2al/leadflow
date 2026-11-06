@@ -78,6 +78,24 @@ class OfferResourceTest extends TestCase
             ->assertSee('Copia script');
     }
 
+    public function test_detail_page_has_code_and_preview_tabs(): void
+    {
+        $offer = $this->offer();
+
+        $this->get(OfferResource::getUrl('view', ['record' => $offer]))
+            ->assertOk()
+            ->assertSeeInOrder(['Codice', 'Anteprima'])
+            ->assertSee(route('embed.form', ['offer' => $offer, 'preview' => 1]));
+    }
+
+    public function test_preview_flag_is_set_only_on_request(): void
+    {
+        $offer = $this->offer();
+
+        $this->get(route('embed.form', [$offer, 'preview' => 1]))->assertOk()->assertSee('var IS_PREVIEW = true;', false);
+        $this->get(route('embed.form', $offer))->assertOk()->assertSee('var IS_PREVIEW = false;', false);
+    }
+
     public function test_detail_page_links_to_the_test_landing(): void
     {
         $offer = $this->offer();

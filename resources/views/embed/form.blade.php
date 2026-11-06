@@ -65,6 +65,8 @@
             var generalError = document.getElementById('leadflow-error');
             var success = document.getElementById('leadflow-success');
             var GENERIC_ERROR = 'Si è verificato un errore. Riprova tra qualche istante.';
+            var IS_PREVIEW = @json($isPreview);
+            var PREVIEW_NOTICE_MS = 4000;
 
             function clearErrors() {
                 generalError.hidden = true;
@@ -104,9 +106,28 @@
                 wrapper.hidden = true;
             }
 
+            // In the panel preview nothing is sent: only the confirmation is shown.
+            function showPreviewNotice() {
+                showSuccess('Anteprima: la richiesta non è stata inviata e non è stato creato alcun ordine.');
+                window.leadflowReportHeight();
+
+                setTimeout(function () {
+                    success.hidden = true;
+                    wrapper.hidden = false;
+                    window.leadflowReportHeight();
+                }, PREVIEW_NOTICE_MS);
+            }
+
             form.addEventListener('submit', function (event) {
                 event.preventDefault();
                 clearErrors();
+
+                if (IS_PREVIEW) {
+                    showPreviewNotice();
+
+                    return;
+                }
+
                 submit.disabled = true;
 
                 fetch(form.action, {

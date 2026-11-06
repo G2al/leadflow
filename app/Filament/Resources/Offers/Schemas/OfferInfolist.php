@@ -8,6 +8,9 @@ use Filament\Actions\Action;
 use Filament\Infolists\Components\IconEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Tabs;
+use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
 use Filament\Support\Enums\FontFamily;
 use Filament\Support\Icons\Heroicon;
@@ -20,7 +23,8 @@ class OfferInfolist
         return $schema
             ->components([
                 Section::make('Dettagli')
-                    ->columns(2)
+                    ->columnSpanFull()
+                    ->columns(3)
                     ->schema([
                         TextEntry::make('name')->label('Nome offerta'),
                         TextEntry::make('product.name')->label('Prodotto'),
@@ -42,13 +46,26 @@ class OfferInfolist
                 Section::make('Codice di incorporamento')
                     ->description('Incolla questo codice nella landing page, nel punto in cui deve comparire il modulo. Lo stesso codice può essere usato su più landing.')
                     ->afterHeader([self::copyScriptAction(), self::launchScriptAction()])
+                    ->columnSpanFull()
                     ->schema([
-                        TextEntry::make('embed_snippet')
-                            ->hiddenLabel()
-                            ->state(fn (Offer $record, OfferEmbedCode $embedCode): string => $embedCode->snippet($record))
-                            ->fontFamily(FontFamily::Mono)
-                            ->copyable()
-                            ->copyMessage('Script copiato'),
+                        Tabs::make('Codice di incorporamento')
+                            ->tabs([
+                                Tab::make('Codice')
+                                    ->icon(Heroicon::OutlinedCodeBracket)
+                                    ->schema([
+                                        TextEntry::make('embed_snippet')
+                                            ->hiddenLabel()
+                                            ->state(fn (Offer $record, OfferEmbedCode $embedCode): string => $embedCode->snippet($record))
+                                            ->fontFamily(FontFamily::Mono)
+                                            ->copyable()
+                                            ->copyMessage('Script copiato'),
+                                    ]),
+                                Tab::make('Anteprima')
+                                    ->icon(Heroicon::OutlinedEye)
+                                    ->schema([
+                                        View::make('filament.offers.embed-preview'),
+                                    ]),
+                            ]),
                     ]),
             ]);
     }
