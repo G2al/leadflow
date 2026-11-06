@@ -36,8 +36,8 @@ php artisan leadflow:assign-role utente@esempio.it admin
 ## Prova manuale del flusso
 
 1. Accedi come admin e crea un prodotto e un'offerta.
-2. Nel dettaglio dell'offerta premi **Copia script**.
-3. Incolla lo script in una pagina HTML in un'altra cartella e servila su un'altra origine:
+2. Per una prova rapida, nel dettaglio dell'offerta premi **Lancia script**: si apre una pagina interna che esegue lo script. Ogni invio da quella pagina crea un ordine reale.
+3. Per provare una landing esterna premi **Copia script**, incolla il codice in una pagina HTML in un'altra cartella e servila su un'altra origine:
 
    ```bash
    php -S 127.0.0.1:9000 -t percorso/della/landing

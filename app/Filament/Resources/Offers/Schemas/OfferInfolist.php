@@ -41,7 +41,7 @@ class OfferInfolist
                     ]),
                 Section::make('Codice di incorporamento')
                     ->description('Incolla questo codice nella landing page, nel punto in cui deve comparire il modulo. Lo stesso codice può essere usato su più landing.')
-                    ->afterHeader([self::copyScriptAction()])
+                    ->afterHeader([self::copyScriptAction(), self::launchScriptAction()])
                     ->schema([
                         TextEntry::make('embed_snippet')
                             ->hiddenLabel()
@@ -51,6 +51,15 @@ class OfferInfolist
                             ->copyMessage('Script copiato'),
                     ]),
             ]);
+    }
+
+    private static function launchScriptAction(): Action
+    {
+        return Action::make('launchScript')
+            ->label('Lancia script')
+            ->icon(Heroicon::OutlinedPlay)
+            ->color('gray')
+            ->url(fn (Offer $record): string => route('filament.admin.offers.test-landing', $record), shouldOpenInNewTab: true);
     }
 
     private static function copyScriptAction(): Action

@@ -19,6 +19,7 @@ class ViewOrder extends ViewRecord
             OrderActions::confirm(),
             OrderActions::cancel(),
             OrderActions::assign(),
+            OrderActions::delete(),
         ];
     }
 }

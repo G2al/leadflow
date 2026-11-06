@@ -67,9 +67,10 @@ class OrderPolicy
             : Response::deny('Un ordine concluso non può essere riassegnato.');
     }
 
+    /** Permanent and possible in any state, so reserved to admins. */
     public function delete(User $user, Order $order): bool
     {
-        return false;
+        return $user->isAdmin();
     }
 
     public function deleteAny(User $user): bool

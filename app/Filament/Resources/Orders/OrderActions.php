@@ -11,6 +11,7 @@ use App\Models\Order;
 use App\Models\User;
 use Closure;
 use Filament\Actions\Action;
+use Filament\Actions\DeleteAction;
 use Filament\Forms\Components\Select;
 use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Grid;
@@ -105,6 +106,16 @@ final class OrderActions
                 fn () => $assignOrder->handle($record, User::query()->findOrFail($data['assigned_to']), self::actor()),
                 'Ordine assegnato.',
             ));
+    }
+
+    public static function delete(): DeleteAction
+    {
+        return DeleteAction::make()
+            ->label('Elimina')
+            ->modalHeading("Eliminare definitivamente l'ordine?")
+            ->modalDescription("L'ordine verrà cancellato per sempre e non potrà essere recuperato.")
+            ->successNotificationTitle('Ordine eliminato.')
+            ->visible(fn (Order $record): bool => Gate::allows('delete', $record));
     }
 
     /**

@@ -78,6 +78,42 @@ class OfferResourceTest extends TestCase
             ->assertSee('Copia script');
     }
 
+    public function test_detail_page_links_to_the_test_landing(): void
+    {
+        $offer = $this->offer();
+
+        $this->get(OfferResource::getUrl('view', ['record' => $offer]))
+            ->assertSee('Lancia script')
+            ->assertSee(route('filament.admin.offers.test-landing', $offer));
+    }
+
+    public function test_test_landing_runs_the_real_snippet_for_admins(): void
+    {
+        $offer = $this->offer(['name' => '<b>Promo</b>']);
+
+        $this->get(route('filament.admin.offers.test-landing', $offer))
+            ->assertOk()
+            ->assertSee(app(OfferEmbedCode::class)->snippet($offer), false)
+            ->assertSee('ogni invio crea un ordine reale')
+            ->assertDontSee('<b>Promo</b>', false)
+            ->assertHeader('X-Frame-Options', 'SAMEORIGIN');
+    }
+
+    public function test_test_landing_is_reserved_to_active_admins(): void
+    {
+        $offer = $this->offer();
+        $url = route('filament.admin.offers.test-landing', $offer);
+
+        $this->actingOnPanel($this->operator());
+        $this->get($url)->assertForbidden();
+
+        $this->actingOnPanel($this->admin(['is_active' => false]));
+        $this->get($url)->assertForbidden();
+
+        auth()->logout();
+        $this->get($url)->assertRedirect('/admin/login');
+    }
+
     public function test_cards_show_price_and_availability_and_can_be_searched_and_filtered(): void
     {
         $active = $this->offer(['name' => 'Promo attiva', 'custom_price' => '39.00']);

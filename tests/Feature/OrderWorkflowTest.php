@@ -14,6 +14,7 @@ use App\Filament\Resources\Orders\Pages\ListOrders;
 use App\Filament\Resources\Orders\Pages\ViewOrder;
 use App\Models\Order;
 use Filament\Actions\Testing\TestAction;
+use Filament\Facades\Filament;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Validation\ValidationException;
@@ -408,13 +409,76 @@ class OrderWorkflowTest extends TestCase
         $this->assertSame(OrderStatus::Cancelled, $order->fresh()->status);
     }
 
-    public function test_orders_cannot_be_created_or_deleted_from_the_panel(): void
+    public function test_orders_cannot_be_created_from_the_panel(): void
+    {
+        $this->actingOnPanel($this->admin());
+
+        $this->assertFalse(auth()->user()->can('create', Order::class));
+    }
+
+    public function test_admin_deletes_an_order_from_the_table_in_any_state(): void
+    {
+        $operator = $this->operator();
+        $new = $this->newOrder();
+        $inProgress = $this->claimedOrder($operator);
+        $confirmed = $this->claimedOrder($operator);
+        app(ConfirmOrder::class)->handle($confirmed, $operator, ['quantity' => 1, 'address' => 'Via Roma 1']);
+        $cancelled = $this->claimedOrder($operator);
+        app(CancelOrder::class)->handle($cancelled, $operator);
+        $this->actingOnPanel($this->admin());
+
+        foreach ([$new, $inProgress, $confirmed, $cancelled] as $order) {
+            Livewire::test(ListOrders::class)
+                ->callAction(TestAction::make('delete')->table($order))
+                ->assertNotified('Ordine eliminato.');
+
+            $this->assertModelMissing($order);
+        }
+    }
+
+    public function test_admin_deletes_an_order_from_the_detail_page_and_returns_to_the_list(): void
     {
         $order = $this->newOrder();
         $this->actingOnPanel($this->admin());
 
-        $this->assertFalse(auth()->user()->can('create', Order::class));
-        $this->assertFalse(auth()->user()->can('delete', $order));
+        Livewire::test(ViewOrder::class, ['record' => $order->getRouteKey()])
+            ->callAction('delete')
+            ->assertRedirect(OrderResource::getUrl());
+
+        $this->assertModelMissing($order);
+    }
+
+    public function test_deleting_an_order_keeps_the_offer(): void
+    {
+        $offer = $this->offer();
+        $order = $this->newOrder($offer);
+        $this->actingOnPanel($this->admin());
+
+        Livewire::test(ListOrders::class)->callAction(TestAction::make('delete')->table($order));
+
+        $this->assertModelExists($offer);
+    }
+
+    public function test_operators_cannot_delete_orders_even_their_own(): void
+    {
+        $operator = $this->operator();
+        $order = $this->claimedOrder($operator);
+        $this->actingOnPanel($operator);
+
+        $this->assertFalse($operator->can('delete', $order));
+
+        Livewire::test(ListOrders::class)->assertActionHidden(TestAction::make('delete')->table($order));
+        Livewire::test(ViewOrder::class, ['record' => $order->getRouteKey()])->assertActionHidden('delete');
+
+        $this->assertModelExists($order);
+    }
+
+    public function test_panel_explains_when_an_item_no_longer_exists(): void
+    {
+        $this->assertSame(
+            'Elemento non più disponibile',
+            Filament::getPanel('admin')->getErrorNotifications()[404]['title'],
+        );
     }
 
     public function test_customer_values_are_escaped_in_the_interface(): void

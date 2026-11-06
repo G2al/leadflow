@@ -3,6 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Enums\NavigationGroup;
+use App\Http\Controllers\OfferTestLandingController;
 use App\Http\Middleware\DenyFraming;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -17,6 +18,7 @@ use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\Facades\Route;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 class AdminPanelProvider extends PanelProvider
@@ -31,6 +33,11 @@ class AdminPanelProvider extends PanelProvider
             ->brandName('LeadFlow')
             ->sidebarWidth('15rem')
             ->navigationGroups(NavigationGroup::class)
+            ->registerErrorNotification(
+                title: 'Elemento non più disponibile',
+                body: 'È stato eliminato da un altro utente. Torna alla lista per continuare.',
+                statusCode: 404,
+            )
             ->colors([
                 'primary' => Color::Amber,
             ])
@@ -54,6 +61,11 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-            ], isPersistent: true);
+            ], isPersistent: true)
+            ->authenticatedRoutes(function (): void {
+                Route::get('offers/{offer}/test-landing', OfferTestLandingController::class)
+                    ->middleware('can:view,offer')
+                    ->name('offers.test-landing');
+            });
     }
 }

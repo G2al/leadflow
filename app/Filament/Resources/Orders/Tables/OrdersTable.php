@@ -89,6 +89,7 @@ class OrdersTable
                     EditAction::make()->label('Modifica dati'),
                     OrderActions::cancel(),
                     OrderActions::assign(),
+                    OrderActions::delete(),
                 ]),
             ]);
     }
