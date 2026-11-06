@@ -5,15 +5,9 @@ Stack: Laravel 12, Filament 5, Spatie Laravel Permission, MySQL/MariaDB. Il pann
 
 ## Avvio
 
-1. Nel file `.env` locale imposta `APP_URL` e le password degli utenti demo. Il seeder si ferma con un messaggio chiaro se mancano.
+1. Nel file `.env` locale imposta `APP_URL` e, se disponibile, `LEADFLOW_PRIVACY_URL`.
 
-   ```dotenv
-   LEADFLOW_DEMO_ADMIN_PASSWORD=
-   LEADFLOW_DEMO_CALL_CENTER_PASSWORD=
-   LEADFLOW_PRIVACY_URL=
-   ```
-
-2. Esegui migration e seed, poi avvia il server. Il seed è idempotente e non modifica le password degli account esistenti.
+2. Esegui migration e seed, poi avvia il server. Il seed crea i due utenti con password `password`: **a ogni esecuzione la reimposta**, anche se è stata cambiata, quindi non rilanciarlo dopo aver scelto una password definitiva.
 
    ```bash
    php artisan migrate
@@ -24,8 +18,8 @@ Stack: Laravel 12, Filament 5, Spatie Laravel Permission, MySQL/MariaDB. Il pann
 
 | Ruolo | Email | Password |
 |---|---|---|
-| `admin` | `admin@leadflow.it` | `LEADFLOW_DEMO_ADMIN_PASSWORD`, solo se l'account viene creato dal seed |
-| `call_center` | `giulia.rossi@leadflow.it` | `LEADFLOW_DEMO_CALL_CENTER_PASSWORD` |
+| `admin` | `admin@leadflow.it` | `password` |
+| `call_center` | `giulia.rossi@leadflow.it` | `password` |
 
 Per dare un ruolo a un account già esistente:
 

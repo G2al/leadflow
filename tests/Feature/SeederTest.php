@@ -10,23 +10,12 @@ use Database\Seeders\DatabaseSeeder;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
-use RuntimeException;
 use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 class SeederTest extends TestCase
 {
     use RefreshDatabase;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        config([
-            'leadflow.demo.admin_password' => 'admin-secret-for-test',
-            'leadflow.demo.call_center_password' => 'operator-secret-for-test',
-        ]);
-    }
 
     public function test_it_creates_only_roles_and_the_two_demo_users(): void
     {
@@ -42,7 +31,8 @@ class SeederTest extends TestCase
         $this->assertTrue($admin->is_active);
         $this->assertTrue($operator->isCallCenter());
         $this->assertTrue($operator->is_active);
-        $this->assertTrue(Hash::check('operator-secret-for-test', $operator->password));
+        $this->assertTrue(Hash::check('password', $admin->password));
+        $this->assertTrue(Hash::check('password', $operator->password));
 
         $panel = Filament::getPanel('admin');
         $this->assertTrue($admin->canAccessPanel($panel));
@@ -53,7 +43,7 @@ class SeederTest extends TestCase
         $this->assertSame(0, Order::query()->count());
     }
 
-    public function test_it_is_idempotent_and_keeps_changed_passwords(): void
+    public function test_it_is_idempotent_and_resets_the_password(): void
     {
         $this->seed(DatabaseSeeder::class);
 
@@ -65,10 +55,10 @@ class SeederTest extends TestCase
         $this->assertSame(2, User::query()->count());
         $this->assertSame(2, Role::query()->count());
         $this->assertCount(1, $operator->fresh()->roles);
-        $this->assertTrue(Hash::check('password-changed-by-user', $operator->fresh()->password));
+        $this->assertTrue(Hash::check('password', $operator->fresh()->password));
     }
 
-    public function test_it_preserves_a_preexisting_admin_account(): void
+    public function test_it_keeps_the_other_data_of_an_existing_account(): void
     {
         $existing = User::factory()->create([
             'name' => 'admin',
@@ -81,17 +71,7 @@ class SeederTest extends TestCase
         $existing->refresh();
         $this->assertSame('admin', $existing->name);
         $this->assertSame('Admin', $existing->surname);
-        $this->assertTrue(Hash::check('original-password', $existing->password));
+        $this->assertTrue(Hash::check('password', $existing->password));
         $this->assertTrue($existing->isAdmin());
-    }
-
-    public function test_it_fails_clearly_when_passwords_are_missing(): void
-    {
-        config(['leadflow.demo.call_center_password' => null]);
-
-        $this->expectException(RuntimeException::class);
-        $this->expectExceptionMessage('LEADFLOW_DEMO_CALL_CENTER_PASSWORD');
-
-        $this->seed(DatabaseSeeder::class);
     }
 }

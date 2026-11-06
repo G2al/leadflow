@@ -5,43 +5,28 @@ namespace Database\Seeders;
 use App\Enums\UserRole;
 use App\Models\User;
 use Illuminate\Database\Seeder;
-use RuntimeException;
 
 class DemoUserSeeder extends Seeder
 {
+    private const PASSWORD = 'password';
+
     public function run(): void
     {
-        $adminPassword = $this->password('admin_password', 'LEADFLOW_DEMO_ADMIN_PASSWORD');
-        $callCenterPassword = $this->password('call_center_password', 'LEADFLOW_DEMO_CALL_CENTER_PASSWORD');
-
-        $this->seedUser('admin@leadflow.it', 'LeadFlow', 'Admin', $adminPassword, UserRole::Admin);
-        $this->seedUser('giulia.rossi@leadflow.it', 'Giulia', 'Rossi', $callCenterPassword, UserRole::CallCenter);
+        $this->seedUser('admin@leadflow.it', 'LeadFlow', 'Admin', UserRole::Admin);
+        $this->seedUser('giulia.rossi@leadflow.it', 'Giulia', 'Rossi', UserRole::CallCenter);
     }
 
-    private function password(string $key, string $envName): string
+    /** Every run resets the password; other data of an existing account is kept. */
+    private function seedUser(string $email, string $name, string $surname, UserRole $role): void
     {
-        $password = config("leadflow.demo.{$key}");
-
-        if (blank($password)) {
-            throw new RuntimeException("Valorizza {$envName} nel file .env locale prima di eseguire il seed.");
-        }
-
-        return $password;
-    }
-
-    /** Existing accounts keep their password and data; only a missing surname is filled in. */
-    private function seedUser(string $email, string $name, string $surname, string $password, UserRole $role): void
-    {
-        $user = User::query()->firstOrCreate(['email' => $email], [
+        $user = User::query()->firstOrNew(['email' => $email], [
             'name' => $name,
-            'surname' => $surname,
-            'password' => $password,
             'is_active' => true,
         ]);
 
-        if (blank($user->surname)) {
-            $user->update(['surname' => $surname]);
-        }
+        $user->surname = filled($user->surname) ? $user->surname : $surname;
+        $user->password = self::PASSWORD;
+        $user->save();
 
         $user->assignRole($role);
     }

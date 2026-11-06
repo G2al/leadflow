@@ -13,12 +13,4 @@ return [
     */
     'privacy_url' => env('LEADFLOW_PRIVACY_URL'),
 
-    /*
-    | Local passwords for the demo accounts, read only by DemoUserSeeder.
-    */
-    'demo' => [
-        'admin_password' => env('LEADFLOW_DEMO_ADMIN_PASSWORD'),
-        'call_center_password' => env('LEADFLOW_DEMO_CALL_CENTER_PASSWORD'),
-    ],
-
 ];
